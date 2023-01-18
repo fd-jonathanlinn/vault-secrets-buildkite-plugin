@@ -91,7 +91,8 @@ secret_exists() {
 secret_download() {
   local server="$1"
   local key="$2"
-  if ! _secret=$(vault kv get -address="$server" -field=data -format=yaml "$key" | sed 's/: /=/g' | sed -r 's/=(.*)$/=\"\1\"/g'); then
+
+  if ! _secret=$(vault kv get -address="$server" -field=data -format=yaml "$key" | sed -r -f sed-patterns ); then
     echo "Failed to download secrets"
     exit 1
   fi
