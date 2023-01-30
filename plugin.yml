@@ -10,6 +10,8 @@ configuration:
   properties:
     server:
       type: string
+    keyname:
+      type: string
     auth:
       type: object
       properties:

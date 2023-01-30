@@ -37,6 +37,21 @@ processEnvSecrets() {
   set +o allexport
 }
 
+processKeySecrets() {
+  local vaultServer="$1"
+  local key="$2"
+  local envscript=''
+  echo "Downloading $BUILDKITE_PLUGIN_VAULT_SECRETS_KEYNAME secret from ${key}" >&2;
+    if ! envscript=$(echo "${envscript:-}" && secret_download "${vaultServer}" "${key}") ; then
+      echo "+++ :warning: Failed to download secrets from $key" >&2;
+      exit 1
+   fi
+  echo "Evaluating ${#envscript} bytes of env"
+  set -o allexport
+  eval "$envscript"
+  set +o allexport
+}
+
 processGitCredentialsSecrets() {
   local vaultServer="$1"
   local key="$2"
@@ -100,6 +115,7 @@ if [[ -n "$vault_server" ]] ; then
       env|environment) processEnvSecrets "$vault_server" "$secret" ;;
       private_ssh_key|id_rsa_github) processSshSecrets "$vault_server" "$secret" ;;
       git-credentials) processGitCredentialsSecrets "$vault_server" "$secret" ;;
+      "$BUILDKITE_PLUGIN_VAULT_SECRETS_KEYNAME") processKeySecrets "$vault_server" "$secret" ;;
     esac
   done
 
